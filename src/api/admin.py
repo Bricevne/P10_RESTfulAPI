@@ -15,29 +15,30 @@ class ProjectsAdmin(admin.ModelAdmin):
 
     list_display = ("title", "type", "author_user_id")
     autocomplete_fields = ("author_user_id",)
+    search_fields = ("project_id",)
 
 
 @admin.register(Issues)
 class IssuesAdmin(admin.ModelAdmin):
 
     list_display = ("title", "tag", "priority", "status", "project_id", "created_time")
+    autocomplete_fields = ("project_id", "author_user_id", "assignee_user_id")
+    search_fields = ("issue_id",)
 
 
 @admin.register(Contributors)
 class ContributorsAdmin(admin.ModelAdmin):
 
     list_display = ("project_id", "user_id", "permission", "role")
+    autocomplete_fields = ("project_id", "user_id")
 
 
 @admin.register(Comments)
 class CommentsAdmin(admin.ModelAdmin):
 
-    list_display = ("author_user_id", "issue_id", "created_time")
+    list_display = ("project", "issue_id", "author_user_id", "created_time")
+    autocomplete_fields = ("author_user_id", "issue_id")
 
-# class ArticleAdmin(admin.ModelAdmin):
-#
-#     list_display = ('name', 'product', 'category', 'active')
-#
-#     @admin.display(description='Category')
-#     def category(self, obj):
-#         return obj.product.category
+    @admin.display(description='Project')
+    def project(self, obj):
+        return obj.issue_id.project_id
