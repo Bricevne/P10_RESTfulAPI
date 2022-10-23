@@ -33,8 +33,29 @@ class TrackingAPITestCase(APITestCase):
             assignee_user_id=cls.second_user
         )
 
+        cls.first_comment = cls.first_issue.comments.create(
+            description="first description",
+            author_user_id=cls.second_user,
+        )
+
+        cls.second_comment = cls.first_issue.comments.create(
+            description="second description",
+            author_user_id=cls.first_user,
+        )
+
     def format_datetime(self, value):
         return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    def get_comment_list_data(self, comments):
+        return [
+            {
+                'id': comment.pk,
+                'description': comment.description,
+                'author_user_id': comment.author_user_id.pk,
+                'issue_id': comment.issue_id.pk,
+                'created_time': self.format_datetime(comment.created_time)
+            } for comment in comments
+        ]
 
     def get_issue_list_data(self, issues):
         return [
@@ -84,5 +105,16 @@ class TestIssue(TrackingAPITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         excepted = self.get_issue_list_data([self.first_issue, self.second_issue])
+        self.assertEqual(excepted, response.json()['results'])
+
+
+class TestComment(TrackingAPITestCase):
+
+    url = reverse_lazy('comment-list')
+
+    def test_list(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        excepted = self.get_comment_list_data([self.first_comment, self.second_comment])
         self.assertEqual(excepted, response.json()['results'])
 
