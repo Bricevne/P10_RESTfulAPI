@@ -54,7 +54,8 @@ class Issues(models.Model):
     description = models.fields.CharField(max_length=2048, blank=True)
     tag = models.fields.CharField(max_length=5, choices=Tag.choices)
     priority = models.CharField(max_length=128, choices=Priority.choices)
-    project_id = models.ForeignKey(to=Projects, on_delete=models.CASCADE, verbose_name="project")
+    project_id = models.ForeignKey(to=Projects, on_delete=models.CASCADE, verbose_name="project",
+                                   related_name="issues")
     status = models.CharField(max_length=128, choices=Status.choices)
     author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                        related_name="author_issues", verbose_name="Author")
