@@ -21,9 +21,9 @@ from api.views import ProjectViewset, IssueViewset, CommentViewset
 
 router = routers.SimpleRouter()
 
-router.register('project', ProjectViewset, basename='project')
-router.register('issue', IssueViewset, basename='issue')
-router.register('comment', CommentViewset, basename='comment')
+router.register('projects', ProjectViewset, basename='project')
+router.register('issues', IssueViewset, basename='issue')
+router.register('comments', CommentViewset, basename='comment')
 
 urlpatterns = [
     path("admin/", admin.site.urls),

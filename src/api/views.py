@@ -1,20 +1,32 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from api.models import Projects, Issues, Comments
-from api.serializers import ProjectSerializer, IssueSerializer, CommentSerializer
+from api.serializers import ProjectListSerializer, ProjectDetailSerializer, IssueListSerializer, CommentSerializer, \
+    IssueDetailSerializer
 
 
-class ProjectViewset(ReadOnlyModelViewSet):
+class MultipleSerializerMixin:
+    detail_serializer_class = None
 
-    serializer_class = ProjectSerializer
+    def get_serializer_class(self):
+        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+            return self.detail_serializer_class
+        return super().get_serializer_class()
+
+
+class ProjectViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+
+    serializer_class = ProjectListSerializer
+    detail_serializer_class = ProjectDetailSerializer
 
     def get_queryset(self):
         return Projects.objects.all()
 
 
-class IssueViewset(ReadOnlyModelViewSet):
+class IssueViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
 
-    serializer_class = IssueSerializer
+    serializer_class = IssueListSerializer
+    detail_serializer_class = IssueDetailSerializer
 
     def get_queryset(self):
         queryset = Issues.objects.all()
@@ -24,7 +36,7 @@ class IssueViewset(ReadOnlyModelViewSet):
         return queryset
 
 
-class CommentViewset(ReadOnlyModelViewSet):
+class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
 
     serializer_class = CommentSerializer
 
