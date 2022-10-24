@@ -81,7 +81,6 @@ class TrackingAPITestCase(APITestCase):
                 'description': project.description,
                 'type': project.type,
                 'author_user_id': project.author_user_id.pk,
-                'issues': self.get_issue_list_data(project.issues.all())
             } for project in projects
         ]
 
@@ -95,6 +94,21 @@ class TestProject(TrackingAPITestCase):
         self.assertEqual(response.status_code, 200)
         excepted = self.get_project_list_data([self.first_project, self.second_project])
         self.assertEqual(excepted, response.json()['results'])
+
+    def test_detail(self):
+        url_detail = reverse_lazy('project-detail', kwargs={"pk": self.first_project.pk})
+        response = self.client.get(url_detail)
+        self.assertEqual(response.status_code, 200)
+        expected = {
+                'id': self.first_project.pk,
+                'title': self.first_project.title,
+                'description': self.first_project.description,
+                'type': self.first_project.type,
+                'author_user_id': self.first_project.author_user_id.pk,
+                'issues': self.get_issue_list_data(self.first_project.issues.all())
+
+            }
+        self.assertEqual(expected, response.json())
 
 
 class TestIssue(TrackingAPITestCase):
