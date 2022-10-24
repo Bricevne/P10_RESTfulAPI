@@ -1,8 +1,8 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from api.models import Projects, Issues, Comments
+from api.models import Projects, Issues, Comments, Contributors
 from api.serializers import ProjectListSerializer, ProjectDetailSerializer, IssueListSerializer, CommentSerializer, \
-    IssueDetailSerializer
+    IssueDetailSerializer, ContributorSerializer
 
 
 class MultipleSerializerMixin:
@@ -12,6 +12,14 @@ class MultipleSerializerMixin:
         if self.action == 'retrieve' and self.detail_serializer_class is not None:
             return self.detail_serializer_class
         return super().get_serializer_class()
+
+
+class ContributorViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
+
+    serializer_class = ContributorSerializer
+
+    def get_queryset(self):
+        return Contributors.objects.filter(project_id=self.kwargs['project_pk'])
 
 
 class ProjectViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
@@ -29,11 +37,7 @@ class IssueViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
     detail_serializer_class = IssueDetailSerializer
 
     def get_queryset(self):
-        queryset = Issues.objects.all()
-        project_id = self.request.GET.get('project_id')
-        if project_id is not None:
-            queryset = queryset.filter(project_id=project_id)
-        return queryset
+        return Issues.objects.filter(project_id=self.kwargs['project_pk'])
 
 
 class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
@@ -41,8 +45,5 @@ class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        queryset = Comments.objects.all()
-        issue_id = self.request.GET.get('issue_id')
-        if issue_id is not None:
-            queryset = queryset.filter(issue_id=issue_id)
-        return queryset
+        return Comments.objects.filter(issue_id=self.kwargs['issue_pk'])
+

@@ -1,6 +1,27 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from api.models import Projects, Issues, Comments
+from api.models import Projects, Issues, Comments, Contributors
+
+
+class UserSerializer(ModelSerializer):
+
+    class Meta:
+        model = Contributors
+        fields = ["id", "username", "email"]
+
+
+class ContributorSerializer(ModelSerializer):
+
+    users = SerializerMethodField()
+
+    class Meta:
+        model = Contributors
+        fields = ["id", "permission", "role", 'users']
+
+    def get_users(self, instance):
+        queryset = instance.users.all()
+        serializer = UserSerializer(queryset, many=True)
+        return serializer.data
 
 
 class CommentSerializer(ModelSerializer):

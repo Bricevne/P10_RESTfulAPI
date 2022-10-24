@@ -73,7 +73,8 @@ class Contributors(models.Model):
         verbose_name = 'Contributor'
 
     project_id = models.ForeignKey(to=Projects, on_delete=models.CASCADE, verbose_name="Project")
-    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="User")
+    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="User",
+                                related_name='users')
     permission = models.CharField(max_length=128)
     role = models.CharField(max_length=128)
 
