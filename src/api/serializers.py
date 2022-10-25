@@ -1,42 +1,46 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from api.models import Projects, Issues, Comments, Contributors
+from api.models import Project, Issue, Comment, Contributor, CustomUser
 
 
 class UserSerializer(ModelSerializer):
 
     class Meta:
-        model = Contributors
+        model = CustomUser
         fields = ["id", "username", "email"]
 
 
-class ContributorSerializer(ModelSerializer):
+class ContributorDetailSerializer(ModelSerializer):
 
-    users = SerializerMethodField()
+    user = UserSerializer()
 
     class Meta:
-        model = Contributors
-        fields = ["id", "permission", "role", 'users']
+        model = Contributor
+        fields = ["id", "permission", "role", 'user']
 
-    def get_users(self, instance):
-        queryset = instance.users.all()
-        serializer = UserSerializer(queryset, many=True)
-        return serializer.data
+
+class ContributorListSerializer(ModelSerializer):
+
+    user = UserSerializer()
+
+    class Meta:
+        model = Contributor
+        fields = ['user']
 
 
 class CommentSerializer(ModelSerializer):
 
     class Meta:
-        model = Comments
-        fields = ["id", "issue_id", "author_user_id", "description", "created_time"]
+        model = Comment
+        fields = ["comment_id", "issue", "author_user", "description", "created_time"]
 
 
 class IssueListSerializer(ModelSerializer):
     class Meta:
-        model = Issues
-        fields = ["id", "title", "description", "tag", "priority", "status", "project_id",
-                  "author_user_id",
-                  "assignee_user_id",
+        model = Issue
+        fields = ["issue_id", "title", "description", "tag", "priority", "status", "project",
+                  "author_user",
+                  "assignee_user",
                   "created_time"]
 
 
@@ -45,10 +49,10 @@ class IssueDetailSerializer(ModelSerializer):
     comments = SerializerMethodField()
 
     class Meta:
-        model = Issues
-        fields = ["id", "title", "description", "tag", "priority", "status", "project_id",
-                  "author_user_id",
-                  "assignee_user_id",
+        model = Issue
+        fields = ["issue_id", "title", "description", "tag", "priority", "status", "project",
+                  "author_user",
+                  "assignee_user",
                   "created_time",
                   "comments"]
 
@@ -61,19 +65,25 @@ class IssueDetailSerializer(ModelSerializer):
 class ProjectListSerializer(ModelSerializer):
 
     class Meta:
-        model = Projects
-        fields = ["id", "title", "description", "type", "author_user_id"]
+        model = Project
+        fields = ["project_id", "title", "description", "type", "author_user"]
 
 
 class ProjectDetailSerializer(ModelSerializer):
 
     issues = SerializerMethodField()
+    users = SerializerMethodField()
 
     class Meta:
-        model = Projects
-        fields = ["id", "title", "description", "type", "author_user_id", "issues"]
+        model = Project
+        fields = ["project_id", "title", "description", "type", "author_user", "users", "issues"]
 
     def get_issues(self, instance):
         queryset = instance.issues.all()
         serializer = IssueListSerializer(queryset, many=True)
+        return serializer.data
+
+    def get_users(self, instance):
+        queryset = instance.contributors.all()
+        serializer = ContributorListSerializer(queryset, many=True)
         return serializer.data

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from issuetracking import settings
 
@@ -9,83 +10,101 @@ class CustomUser(AbstractUser):
     pass
 
 
-class Projects(models.Model):
-
-    class Meta:
-        verbose_name = 'Project'
+class Project(models.Model):
 
     class Type(models.TextChoices):
-        BACK_END = 'BE'
-        FRONT_END = 'FE'
-        IOS = 'IOS'
-        ANDROID = "AN"
+        BACK_END = 'BE', _('Back-End')
+        FRONT_END = 'FE', _('Front-End')
+        IOS = 'IOS', _('iOS')
+        ANDROID = "AN", _('Android')
 
-    title = models.fields.CharField(max_length=128)
-    description = models.fields.CharField(max_length=2048, blank=True)
-    type = models.fields.CharField(max_length=5, choices=Type.choices)
-    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                       verbose_name="Author")
+    project_id = models.BigAutoField(primary_key=True)
+    title = models.CharField(max_length=128)
+    description = models.CharField(max_length=2048, blank=True)
+    type = models.CharField(max_length=3, choices=Type.choices)
+    author_user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Author"
+    )
 
     def __str__(self):
         return f"{self.title}"
 
 
-class Issues(models.Model):
-
-    class Meta:
-        verbose_name = 'Issue'
+class Issue(models.Model):
 
     class Tag(models.TextChoices):
-        BUG = 'BUG'
-        IMPROVEMENT = 'IMP'
-        TASK = 'TASK'
+        BUG = 'B', _('Bug')
+        IMPROVEMENT = 'I', _('Improvement')
+        TASK = 'T', _('Task')
 
     class Priority(models.TextChoices):
-        LOW = 'LOW'
-        MEDIUM = 'MED'
-        HIGH = 'HIGH'
+        LOW = 'L', _('Low')
+        MEDIUM = 'M', _('Medium')
+        HIGH = 'H', _('High')
 
     class Status(models.TextChoices):
-        TO_DO = 'TD'
-        IN_PROGRESS = 'IP'
-        COMPLETED = 'COMP'
+        TO_DO = 'TD', _('To do')
+        IN_PROGRESS = 'IP', _('In progress')
+        COMPLETED = 'C', _('Completed')
 
-    title = models.fields.CharField(max_length=128)
-    description = models.fields.CharField(max_length=2048, blank=True)
-    tag = models.fields.CharField(max_length=5, choices=Tag.choices)
-    priority = models.CharField(max_length=128, choices=Priority.choices)
-    project_id = models.ForeignKey(to=Projects, on_delete=models.CASCADE, verbose_name="project",
-                                   related_name="issues")
-    status = models.CharField(max_length=128, choices=Status.choices)
-    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                       related_name="author_issues", verbose_name="Author")
-    assignee_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                         related_name="assignee_issues", verbose_name="Assignee")
+    issue_id = models.BigAutoField(primary_key=True)
+    title = models.CharField(max_length=128)
+    description = models.CharField(max_length=2048, blank=True)
+    tag = models.CharField(max_length=1, choices=Tag.choices)
+    priority = models.CharField(max_length=1, choices=Priority.choices)
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name="project", related_name="issues")
+    status = models.CharField(max_length=2, choices=Status.choices)
+    author_user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="author_issues",
+        verbose_name="Author"
+    )
+    assignee_user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="assignee_issues",
+        verbose_name="Assignee"
+    )
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.title}"
 
 
-class Contributors(models.Model):
+class Contributor(models.Model):
 
-    class Meta:
-        verbose_name = 'Contributor'
+    class Permission(models.TextChoices):
+        CR = 'CR', _('Create and Read')
+        CRUD = 'CRUD', _('Create, Read, Update and Delete')
 
-    project_id = models.ForeignKey(to=Projects, on_delete=models.CASCADE, verbose_name="Project")
-    user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="User",
-                                related_name='users')
-    permission = models.CharField(max_length=128)
-    role = models.CharField(max_length=128)
+    class Role(models.TextChoices):
+        LEADER = 'L', _('Leader')
+        DEVELOPER = 'D', _('Developer')
+        TESTER = 'T', _('Tester')
+
+    project = models.ForeignKey(
+        to=Project,
+        on_delete=models.CASCADE,
+        verbose_name="Project",
+        related_name='contributors'
+    )
+    user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="User",
+        related_name='contributors'
+    )
+    permission = models.CharField(max_length=50, choices=Permission.choices)
+    role = models.CharField(max_length=50, choices=Role.choices)
 
 
-class Comments(models.Model):
+class Comment(models.Model):
 
-    class Meta:
-        verbose_name = 'Comment'
-
+    comment_id = models.BigAutoField(primary_key=True)
     description = models.fields.CharField(max_length=2048, verbose_name="Description")
-    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                       verbose_name="Author")
-    issue_id = models.ForeignKey(to=Issues, on_delete=models.CASCADE, verbose_name="Issue", related_name="comments")
+    author_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Author")
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, verbose_name="Issue", related_name="comments")
     created_time = models.DateTimeField(auto_now_add=True)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from api.models import Projects, Issues, Contributors, Comments, CustomUser
+from api.models import Project, Issue, Contributor, Comment, CustomUser
 
 
 @admin.register(CustomUser)
@@ -10,35 +10,35 @@ class CustomUserAdmin(UserAdmin):
     pass
 
 
-@admin.register(Projects)
+@admin.register(Project)
 class ProjectsAdmin(admin.ModelAdmin):
 
-    list_display = ("title", "type", "author_user_id")
-    autocomplete_fields = ("author_user_id",)
-    search_fields = ("project_id",)
+    list_display = ("title", "type", "author_user")
+    autocomplete_fields = ("author_user",)
+    search_fields = ("project",)
 
 
-@admin.register(Issues)
+@admin.register(Issue)
 class IssuesAdmin(admin.ModelAdmin):
 
-    list_display = ("title", "tag", "priority", "status", "project_id", "created_time")
-    autocomplete_fields = ("project_id", "author_user_id", "assignee_user_id")
-    search_fields = ("issue_id",)
+    list_display = ("title", "tag", "priority", "status", "project", "created_time")
+    autocomplete_fields = ("project", "author_user", "assignee_user")
+    search_fields = ("issue",)
 
 
-@admin.register(Contributors)
+@admin.register(Contributor)
 class ContributorsAdmin(admin.ModelAdmin):
 
-    list_display = ("project_id", "user_id", "permission", "role")
-    autocomplete_fields = ("project_id", "user_id")
+    list_display = ("project", "user", "permission", "role")
+    autocomplete_fields = ("project", "user")
 
 
-@admin.register(Comments)
+@admin.register(Comment)
 class CommentsAdmin(admin.ModelAdmin):
 
-    list_display = ("project", "issue_id", "author_user_id", "created_time")
-    autocomplete_fields = ("author_user_id", "issue_id")
+    list_display = ("project", "issue", "author_user", "created_time")
+    autocomplete_fields = ("author_user", "issue")
 
     @admin.display(description='Project')
     def project(self, obj):
-        return obj.issue_id.project_id
+        return obj.issue.project

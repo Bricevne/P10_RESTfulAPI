@@ -1,8 +1,8 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from api.models import Projects, Issues, Comments, Contributors
+from api.models import Project, Issue, Comment, Contributor
 from api.serializers import ProjectListSerializer, ProjectDetailSerializer, IssueListSerializer, CommentSerializer, \
-    IssueDetailSerializer, ContributorSerializer
+    IssueDetailSerializer, ContributorListSerializer, ContributorDetailSerializer
 
 
 class MultipleSerializerMixin:
@@ -16,10 +16,11 @@ class MultipleSerializerMixin:
 
 class ContributorViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
 
-    serializer_class = ContributorSerializer
+    serializer_class = ContributorListSerializer
+    detail_serializer_class = ContributorDetailSerializer
 
     def get_queryset(self):
-        return Contributors.objects.filter(project_id=self.kwargs['project_pk'])
+        return Contributor.objects.filter(project_id=self.kwargs['project_pk'])
 
 
 class ProjectViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
@@ -28,7 +29,7 @@ class ProjectViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
     detail_serializer_class = ProjectDetailSerializer
 
     def get_queryset(self):
-        return Projects.objects.all()
+        return Project.objects.all()
 
 
 class IssueViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
@@ -37,7 +38,7 @@ class IssueViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
     detail_serializer_class = IssueDetailSerializer
 
     def get_queryset(self):
-        return Issues.objects.filter(project_id=self.kwargs['project_pk'])
+        return Issue.objects.filter(project_id=self.kwargs['project_pk'])
 
 
 class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
@@ -45,5 +46,5 @@ class CommentViewset(MultipleSerializerMixin, ReadOnlyModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        return Comments.objects.filter(issue_id=self.kwargs['issue_pk'])
+        return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
 
