@@ -63,7 +63,7 @@ class CustomUser(AbstractBaseUser):
     admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     objects = CustomUserManager()
 
@@ -117,6 +117,8 @@ class Project(models.Model):
         verbose_name="Author"
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return f"{self.title}"
 
@@ -143,7 +145,7 @@ class Issue(models.Model):
     description = models.CharField(max_length=2048, blank=True)
     tag = models.CharField(max_length=1, choices=Tag.choices)
     priority = models.CharField(max_length=1, choices=Priority.choices)
-    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, verbose_name="project", related_name="issues")
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name="issues")
     status = models.CharField(max_length=2, choices=Status.choices)
     author_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -158,6 +160,8 @@ class Issue(models.Model):
         verbose_name="Assignee"
     )
     created_time = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()
 
     def __str__(self):
         return f"{self.title}"
@@ -177,17 +181,17 @@ class Contributor(models.Model):
     project = models.ForeignKey(
         to=Project,
         on_delete=models.CASCADE,
-        verbose_name="Project",
         related_name='contributors'
     )
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name="User",
         related_name='contributors'
     )
     permission = models.CharField(max_length=50, choices=Permission.choices)
     role = models.CharField(max_length=50, choices=Role.choices)
+
+    objects = models.Manager()
 
 
 class Comment(models.Model):
@@ -195,5 +199,7 @@ class Comment(models.Model):
     comment_id = models.BigAutoField(primary_key=True)
     description = models.fields.CharField(max_length=2048, verbose_name="Description")
     author_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Author")
-    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, verbose_name="Issue", related_name="comments")
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name="comments")
     created_time = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()

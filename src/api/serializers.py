@@ -1,13 +1,57 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from django.contrib.auth.password_validation import validate_password
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError, CharField
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import Project, Issue, Comment, Contributor, CustomUser
+
+
+class RegisterSerializer(ModelSerializer):
+
+    password = CharField(write_only=True, required=True, validators=[validate_password])
+    password_confirmation = CharField(write_only=True, required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'first_name', 'last_name', 'password', 'password_confirmation')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True}
+        }
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirmation']:
+            raise ValidationError({"password": "Password fields didn't match."})
+        return attrs
+
+    def create(self, validated_data):
+
+        user = CustomUser.objects.create(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
+        )
+
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['email'] = user.email
+        return token
 
 
 class UserSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["id", "username", "email"]
+        fields = ["first_name", "last_name", "email"]
 
 
 class ContributorDetailSerializer(ModelSerializer):
@@ -16,32 +60,43 @@ class ContributorDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Contributor
-        fields = ["id", "permission", "role", 'user']
+        fields = ["user_id", "project_id", "permission", "role", 'user']
 
 
 class ContributorListSerializer(ModelSerializer):
 
-    user = UserSerializer()
-
     class Meta:
         model = Contributor
-        fields = ['user']
+        fields = ["user_id", "permission", "role"]
 
 
-class CommentSerializer(ModelSerializer):
+class CommentListSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["comment_id", "issue", "author_user", "description", "created_time"]
+        fields = ["comment_id", "author_user_id"]
+
+
+class CommentDetailSerializer(ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ["comment_id", "description", "issue_id", "author_user_id", "created_time"]
 
 
 class IssueListSerializer(ModelSerializer):
     class Meta:
         model = Issue
-        fields = ["issue_id", "title", "description", "tag", "priority", "status", "project",
-                  "author_user",
-                  "assignee_user",
-                  "created_time"]
+        fields = [
+            "issue_id",
+            "title",
+            "description",
+            "tag",
+            "priority",
+            "status",
+            "author_user_id",
+            "assignee_user_id",
+        ]
 
 
 class IssueDetailSerializer(ModelSerializer):
@@ -50,15 +105,23 @@ class IssueDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Issue
-        fields = ["issue_id", "title", "description", "tag", "priority", "status", "project",
-                  "author_user",
-                  "assignee_user",
-                  "created_time",
-                  "comments"]
+        fields = [
+            "issue_id",
+            "title",
+            "description",
+            "tag",
+            "priority",
+            "status",
+            "project_id",
+            "author_user_id",
+            "assignee_user_id",
+            "created_time",
+            "comments"
+        ]
 
     def get_comments(self, instance):
         queryset = instance.comments.all()
-        serializer = CommentSerializer(queryset, many=True)
+        serializer = CommentListSerializer(queryset, many=True)
         return serializer.data
 
 
@@ -66,7 +129,7 @@ class ProjectListSerializer(ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["project_id", "title", "description", "type", "author_user"]
+        fields = ["project_id", "title", "description", "type", "author_user_id"]
 
 
 class ProjectDetailSerializer(ModelSerializer):
@@ -76,7 +139,7 @@ class ProjectDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["project_id", "title", "description", "type", "author_user", "users", "issues"]
+        fields = ["project_id", "title", "description", "type", "author_user_id", "users", "issues"]
 
     def get_issues(self, instance):
         queryset = instance.issues.all()
