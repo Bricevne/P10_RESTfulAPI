@@ -4,6 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.models import Project, Issue, Comment, Contributor, CustomUser
+from api.permissions import IsAuthenticatedProjectAuthorOrContributor
 from api.serializers import ProjectListSerializer, ProjectDetailSerializer, IssueListSerializer, \
     IssueDetailSerializer, ContributorListSerializer, ContributorDetailSerializer, CommentListSerializer, \
     CommentDetailSerializer, MyTokenObtainPairSerializer, RegisterSerializer
@@ -33,6 +34,7 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ContributorListSerializer
     detail_serializer_class = ContributorDetailSerializer
+    permission_classes = [IsAuthenticatedProjectAuthorOrContributor]
 
     def get_queryset(self):
         return Contributor.objects.filter(project_id=self.kwargs['project_pk'])
@@ -42,6 +44,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
+    permission_classes = [IsAuthenticatedProjectAuthorOrContributor]
 
     def get_queryset(self):
         return Project.objects.all()
@@ -51,6 +54,7 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
     detail_serializer_class = IssueDetailSerializer
+    permission_classes = [IsAuthenticatedProjectAuthorOrContributor]
 
     def get_queryset(self):
         return Issue.objects.filter(project_id=self.kwargs['project_pk'])
@@ -60,6 +64,7 @@ class CommentViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = CommentListSerializer
     detail_serializer_class = CommentDetailSerializer
+    permission_classes = [IsAuthenticatedProjectAuthorOrContributor]
 
     def get_queryset(self):
         return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
