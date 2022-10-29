@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 from api.models import Project, Contributor, Issue, Comment
 
@@ -24,8 +24,11 @@ class IsAuthenticatedProjectAuthorOrContributor(BasePermission):
 
         is_authenticated = bool(request.user and request.user.is_authenticated)
 
+        if not is_authenticated:
+            return False
+
         # if user is authenticated, can view projects list
-        if isinstance(view, ProjectViewset) and view.action in ['list'] and is_authenticated:
+        if isinstance(view, ProjectViewset) and view.action in ['list', 'create']:
             return True
 
         # Can access the project
@@ -37,7 +40,7 @@ class IsAuthenticatedProjectAuthorOrContributor(BasePermission):
         is_contributor = contributor(request.user, project)
         is_project_author = (request.user == project.author_user)
 
-        if request.user and request.user.is_authenticated and (is_contributor or is_project_author):
+        if request.user and (is_contributor or is_project_author):
             return True
         return False
 
@@ -60,7 +63,7 @@ class IsAuthenticatedProjectAuthorOrContributor(BasePermission):
             instance = obj.project
         else:
             instance = obj
-        is_author = instance.author_user
+        is_author = bool(instance.author_user == request.user)
         return bool(request.user and request.user.is_authenticated and is_author)
 
 

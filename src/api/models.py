@@ -157,7 +157,7 @@ class Issue(models.Model):
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="assignee_issues",
-        verbose_name="Assignee"
+        verbose_name="Assignee",
     )
     created_time = models.DateTimeField(auto_now_add=True)
 

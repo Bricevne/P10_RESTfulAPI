@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet
@@ -39,6 +40,11 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         return Contributor.objects.filter(project_id=self.kwargs['project_pk'])
 
+    def perform_create(self, serializer):
+        user = get_object_or_404(CustomUser, pk=serializer._kwargs['data']['user_id'])
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        serializer.save(user=user, project=project)
+
 
 class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
@@ -49,6 +55,9 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         return Project.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(author_user=self.request.user)
+
 
 class IssueViewset(MultipleSerializerMixin, ModelViewSet):
 
@@ -58,6 +67,11 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
 
     def get_queryset(self):
         return Issue.objects.filter(project_id=self.kwargs['project_pk'])
+
+    def perform_create(self, serializer):
+        assignee_user = get_object_or_404(CustomUser, pk=serializer._kwargs['data']['assignee_user'])
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        serializer.save(author_user=self.request.user, assignee_user=assignee_user, project=project)
 
 
 class CommentViewset(MultipleSerializerMixin, ModelViewSet):
