@@ -4,10 +4,6 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 from api.models import Project, Contributor, Issue, Comment
 
 
-def get_object_from_instance(view, model):
-    return get_object_or_404(model, pk=view.kwargs['pk'])
-
-
 def contributor(user, project):
     try:
         Contributor.objects.get(user=user, project=project)
