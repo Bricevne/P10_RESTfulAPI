@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -73,6 +74,11 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
         project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
         serializer.save(author_user=self.request.user, assignee_user=assignee_user, project=project)
 
+    def perform_update(self, serializer):
+        assignee_user = get_object_or_404(CustomUser, pk=serializer._kwargs['data']['assignee_user'])
+        serializer.save(assignee_user=assignee_user)
+
+
 
 class CommentViewset(MultipleSerializerMixin, ModelViewSet):
 
@@ -83,3 +89,7 @@ class CommentViewset(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         return Comment.objects.filter(issue_id=self.kwargs['issue_pk'])
 
+    def perform_create(self, serializer):
+        issue = get_object_or_404(Issue, pk=self.kwargs['issue_pk'])
+        description = serializer._kwargs['data']['description']
+        serializer.save(author_user=self.request.user, issue=issue, description=description)
