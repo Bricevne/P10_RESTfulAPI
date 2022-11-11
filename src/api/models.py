@@ -6,7 +6,7 @@ from issuetracking import settings
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None):
+    def create_user(self, email, first_name, last_name, password=None):
         """
         Creates and saves a User with the given email and password.
         """
@@ -15,30 +15,36 @@ class CustomUserManager(BaseUserManager):
 
         user = self.model(
             email=self.normalize_email(email),
+            first_name=first_name,
+            last_name=last_name
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_staffuser(self, email, password):
+    def create_staffuser(self, email, first_name, last_name, password):
         """
         Creates and saves a staff user with the given email and password.
         """
         user = self.create_user(
             email,
+            first_name,
+            last_name,
             password=password,
         )
         user.staff = True
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, first_name, last_name, password):
         """
         Creates and saves a superuser with the given email and password.
         """
         user = self.create_user(
             email,
+            first_name,
+            last_name,
             password=password,
         )
         user.staff = True
@@ -109,7 +115,7 @@ class Project(models.Model):
 
     project_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=128)
-    description = models.CharField(max_length=2048, blank=True)
+    description = models.CharField(max_length=2048, null=True)
     type = models.CharField(max_length=3, choices=Type.choices)
     author_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -142,7 +148,7 @@ class Issue(models.Model):
 
     issue_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=128)
-    description = models.CharField(max_length=2048, blank=True)
+    description = models.CharField(max_length=2048, null=True)
     tag = models.CharField(max_length=1, choices=Tag.choices)
     priority = models.CharField(max_length=1, choices=Priority.choices)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name="issues")
@@ -197,7 +203,7 @@ class Contributor(models.Model):
 class Comment(models.Model):
 
     comment_id = models.BigAutoField(primary_key=True)
-    description = models.fields.CharField(max_length=2048, verbose_name="Description")
+    description = models.CharField(max_length=2048)
     author_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Author")
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE, related_name="comments")
     created_time = models.DateTimeField(auto_now_add=True)
