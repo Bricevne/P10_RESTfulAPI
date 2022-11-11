@@ -1,9 +1,17 @@
 from django.contrib.auth.password_validation import validate_password
+from django.shortcuts import get_object_or_404
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError, CharField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import Project, Issue, Comment, Contributor, CustomUser
 
+def contributor(user, project):
+    try:
+        Contributor.objects.get(user=user, project=project)
+    except Contributor.DoesNotExist:
+        return False
+    else:
+        return True
 
 class RegisterSerializer(ModelSerializer):
 
@@ -67,14 +75,14 @@ class ContributorListSerializer(ModelSerializer):
 
     class Meta:
         model = Contributor
-        fields = ["user_id", "permission", "role"]
+        fields = ["id", "user_id", "permission", "role"]
 
 
 class CommentListSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["comment_id", "author_user_id"]
+        fields = ["comment_id", "description", "author_user_id"]
 
 
 class CommentDetailSerializer(ModelSerializer):
@@ -97,6 +105,14 @@ class IssueListSerializer(ModelSerializer):
             "author_user_id",
             "assignee_user_id",
         ]
+
+    def validate(self, data):
+        request = self.context.get("request")
+        project = Project.objects.get(pk=request.parser_context['kwargs']['project_pk'])
+        assignee_user = CustomUser.objects.get(pk=self._kwargs['data']['assignee_user'])
+        if not (contributor(assignee_user, project) or assignee_user == project.author_user):
+            raise ValidationError(f"assignee_user {assignee_user.user_id} is no author nor contributor of this project")
+        return data
 
 
 class IssueDetailSerializer(ModelSerializer):
