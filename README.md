@@ -29,16 +29,44 @@ Insert your django secret key in the .env file
 
 `DJANGO_SECRET_KEY="DJANGO_SECRET_KEY"`
 
-## Usage
 
-Run the following code to access the api:
+## Launch the local server
+
+Enter the "src" folder and run the following code to access the api:
 
 ```bash
 python manage.py migrate # Create the migrations
 python manage.py runserver # Start the local server
 ```
 
-You can then access the website with http://127.0.0.1:8000/api/
+## Use Postman to test the API's endpoints
+
+### Install Postman
+You can install Postman by following the instructions from the following url:
+
+`https://www.postman.com/downloads/"`
+
+### Authentication
+
+The /signup and /login endpoints do not need an authentication token to access.
+
+All the other endpoints are only accessible by an authenticated user after generation of a simple JWT access token. 
+Moreover, a user has to be a contributor or a project author to have access to endpoints for specific projects, 
+issues and comments.
+
+### Collection test
+
+You can either test all endpoints at once through the "Run collection" button, or one by one.
+
+This collection is divided into several folders:
+- "Authentication": /signup and /login endpoints which do not need an access token.
+- "Projects": /projects endpoints for CRUD actions on projects. Needs an access token.
+- "Users": /users endpoints for CRD actions on contributors. Needs an access token.
+- "Issues": /issues endpoints for CRUD actions on issues. Needs an access token.
+- "Comments": /comments endpoints for CRUD actions on comments. Needs an access token.
+
+For ease of use, this API collection automatically add the JWT access token to environment variables after logging with
+an account. This variable is thus inherited by the Projects, Users, Issues and Comments folders.
 
 ## License
 
