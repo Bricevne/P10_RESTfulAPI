@@ -32,14 +32,15 @@ class IsAuthenticatedProjectAuthorOrContributor(BasePermission):
 
         is_authenticated = bool(request.user and request.user.is_authenticated)
 
+        # if user is not authenticated, he can't have access to anything
         if not is_authenticated:
             return False
 
-        # if user is authenticated, can view projects list
+        # if user is authenticated, can view projects list and create a project
         if isinstance(view, ProjectViewset) and view.action in ['list', 'create']:
             return True
 
-        # Can access the project
+        # Can access the whole project if user is author or contributor
         if isinstance(view, ProjectViewset):
             project = get_object_or_404(Project, pk=view.kwargs['pk'])
         else:
@@ -67,12 +68,14 @@ class IsAuthenticatedProjectAuthorOrContributor(BasePermission):
         is_contributor = contributor(request.user, project)
         is_project_author = (request.user == project.author_user)
 
+        # if user is authenticated and contributor or author, can access the whole project with safe methods
         if request.method in SAFE_METHODS \
                 and request.user \
                 and request.user.is_authenticated \
                 and (is_contributor or is_project_author):
             return True
 
+        # if user is authenticated and author of an instance, can update or delete the instance
         if isinstance(obj, Contributor):
             instance = obj.project
         else:
