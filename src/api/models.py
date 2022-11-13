@@ -210,6 +210,9 @@ class Contributor(models.Model):
     permission = models.CharField(max_length=50, choices=Permission.choices)
     role = models.CharField(max_length=50, choices=Role.choices)
 
+    class Meta:
+        unique_together = ('user', 'project')
+
     objects = models.Manager()
 
 
