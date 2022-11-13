@@ -6,7 +6,7 @@ from api.models import Project, Issue, Contributor, Comment, CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    """CustomUser class."""
+    """Class managing custom users in admin panel."""
 
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
@@ -33,6 +33,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Project)
 class ProjectsAdmin(admin.ModelAdmin):
+    """Class managing projects in admin panel."""
 
     list_display = ("title", "type", "author_user")
     autocomplete_fields = ("author_user",)
@@ -41,6 +42,7 @@ class ProjectsAdmin(admin.ModelAdmin):
 
 @admin.register(Issue)
 class IssuesAdmin(admin.ModelAdmin):
+    """Class managing issues in admin panel."""
 
     list_display = ("title", "tag", "priority", "status", "project", "created_time")
     autocomplete_fields = ("project", "author_user", "assignee_user")
@@ -49,6 +51,7 @@ class IssuesAdmin(admin.ModelAdmin):
 
 @admin.register(Contributor)
 class ContributorsAdmin(admin.ModelAdmin):
+    """Class managing contributors in admin panel."""
 
     list_display = ("project", "user", "permission", "role")
     autocomplete_fields = ("project", "user")
@@ -56,6 +59,7 @@ class ContributorsAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentsAdmin(admin.ModelAdmin):
+    """Class managing comments in admin panel."""
 
     list_display = ("project", "issue", "author_user", "created_time")
     autocomplete_fields = ("author_user", "issue")

@@ -6,9 +6,11 @@ from issuetracking import settings
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, password=None):
+    """Manager class for custom users."""
+
+    def create_user(self, email: str, first_name: str, last_name: str, password=None):
         """
-        Creates and saves a User with the given email and password.
+        Creates and saves a User with the given email, first name, last name and password.
         """
         if not email:
             raise ValueError('Users must have an email address')
@@ -23,9 +25,9 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_staffuser(self, email, first_name, last_name, password):
+    def create_staffuser(self, email: str, first_name: str, last_name: str, password: str):
         """
-        Creates and saves a staff user with the given email and password.
+        Creates and saves a staff user with the given email, first name, last name and password.
         """
         user = self.create_user(
             email,
@@ -37,9 +39,9 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, first_name, last_name, password):
+    def create_superuser(self, email: str, first_name: str, last_name: str, password: str):
         """
-        Creates and saves a superuser with the given email and password.
+        Creates and saves a superuser with the given email, first name, last name and password.
         """
         user = self.create_user(
             email,
@@ -54,7 +56,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    """Class User."""
+    """Class managing custom users."""
 
     class Meta:
         verbose_name = "User"
@@ -85,28 +87,36 @@ class CustomUser(AbstractBaseUser):
         return self.get_full_name()
 
     def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
+        """
+        Does the user have a specific permission?
+        """
         # Simplest possible answer: Yes, always
         return True
 
     def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
+        """
+        Does the user have permissions to view the app `app_label`?
+        """
         # Simplest possible answer: Yes, always
         return True
 
     @property
     def is_staff(self):
-        "Is the user a member of staff?"
+        """
+        Is the user a member of staff?
+        """
         return self.staff
 
     @property
     def is_admin(self):
-        "Is the user a admin member?"
+        """
+        Is the user an admin member?
+        """
         return self.admin
 
 
 class Project(models.Model):
-
+    """Class managing projects."""
     class Type(models.TextChoices):
         BACK_END = 'BE', _('Back-End')
         FRONT_END = 'FE', _('Front-End')
@@ -130,6 +140,7 @@ class Project(models.Model):
 
 
 class Issue(models.Model):
+    """Class managing issues."""
 
     class Tag(models.TextChoices):
         BUG = 'B', _('Bug')
@@ -174,6 +185,7 @@ class Issue(models.Model):
 
 
 class Contributor(models.Model):
+    """Class managing contributors. Represents a link between users and projects."""
 
     class Permission(models.TextChoices):
         CR = 'CR', _('Create and Read')
@@ -201,6 +213,7 @@ class Contributor(models.Model):
 
 
 class Comment(models.Model):
+    """Class managing comments."""
 
     comment_id = models.BigAutoField(primary_key=True)
     description = models.CharField(max_length=2048)

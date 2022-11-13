@@ -1,11 +1,13 @@
 from django.contrib.auth.password_validation import validate_password
-from django.shortcuts import get_object_or_404
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError, CharField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import Project, Issue, Comment, Contributor, CustomUser
 
+
 def contributor(user, project):
+    """Verifies if a user is a contributor of the project."""
+
     try:
         Contributor.objects.get(user=user, project=project)
     except Contributor.DoesNotExist:
@@ -13,7 +15,9 @@ def contributor(user, project):
     else:
         return True
 
+
 class RegisterSerializer(ModelSerializer):
+    """Registration serializer."""
 
     password = CharField(write_only=True, required=True, validators=[validate_password])
     password_confirmation = CharField(write_only=True, required=True)
@@ -27,11 +31,14 @@ class RegisterSerializer(ModelSerializer):
         }
 
     def validate(self, attrs):
+        """Validates identical passwords."""
+
         if attrs['password'] != attrs['password_confirmation']:
             raise ValidationError({"password": "Password fields didn't match."})
         return attrs
 
     def create(self, validated_data):
+        """Creates a custom user."""
 
         user = CustomUser.objects.create(
             email=validated_data['email'],
@@ -45,17 +52,20 @@ class RegisterSerializer(ModelSerializer):
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Custom ObtainTokenPair Serializer from simple JWT to add a custom claim."""
 
     @classmethod
     def get_token(cls, user):
+        """Gets token and add a claim."""
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
-        # Add custom claims
+        # Add custom claim
         token['email'] = user.email
         return token
 
 
 class UserSerializer(ModelSerializer):
+    """User serializer"""
 
     class Meta:
         model = CustomUser
@@ -63,6 +73,7 @@ class UserSerializer(ModelSerializer):
 
 
 class ContributorDetailSerializer(ModelSerializer):
+    """Contributor serializer for a specific detailed contributor."""
 
     user = UserSerializer()
 
@@ -72,6 +83,7 @@ class ContributorDetailSerializer(ModelSerializer):
 
 
 class ContributorListSerializer(ModelSerializer):
+    """Contributor serializer for a list of contributors."""
 
     class Meta:
         model = Contributor
@@ -79,6 +91,7 @@ class ContributorListSerializer(ModelSerializer):
 
 
 class CommentListSerializer(ModelSerializer):
+    """Comment serializer for a list of comments."""
 
     class Meta:
         model = Comment
@@ -86,6 +99,7 @@ class CommentListSerializer(ModelSerializer):
 
 
 class CommentDetailSerializer(ModelSerializer):
+    """Comment serializer for a specific detailed comment."""
 
     class Meta:
         model = Comment
@@ -93,6 +107,8 @@ class CommentDetailSerializer(ModelSerializer):
 
 
 class IssueListSerializer(ModelSerializer):
+    """Issue serializer for a list of issues."""
+
     class Meta:
         model = Issue
         fields = [
@@ -107,6 +123,11 @@ class IssueListSerializer(ModelSerializer):
         ]
 
     def validate(self, data):
+        """
+        Verifies if an assignee user is part of the project contributors.
+        If he is not, returns an error.
+        """
+
         request = self.context.get("request")
         project = Project.objects.get(pk=request.parser_context['kwargs']['project_pk'])
         assignee_user = CustomUser.objects.get(pk=self._kwargs['data']['assignee_user'])
@@ -116,6 +137,7 @@ class IssueListSerializer(ModelSerializer):
 
 
 class IssueDetailSerializer(ModelSerializer):
+    """Issue serializer for a specific detailed issue."""
 
     comments = SerializerMethodField()
 
@@ -136,12 +158,15 @@ class IssueDetailSerializer(ModelSerializer):
         ]
 
     def get_comments(self, instance):
+        """Gets a list of comments for a particular issue."""
+
         queryset = instance.comments.all()
         serializer = CommentListSerializer(queryset, many=True)
         return serializer.data
 
 
 class ProjectListSerializer(ModelSerializer):
+    """Project serializer for a list of projects."""
 
     class Meta:
         model = Project
@@ -149,6 +174,7 @@ class ProjectListSerializer(ModelSerializer):
 
 
 class ProjectDetailSerializer(ModelSerializer):
+    """Project serializer for a specific detailed project."""
 
     issues = SerializerMethodField()
     users = SerializerMethodField()
@@ -158,11 +184,15 @@ class ProjectDetailSerializer(ModelSerializer):
         fields = ["project_id", "title", "description", "type", "author_user_id", "users", "issues"]
 
     def get_issues(self, instance):
+        """Gets a list of issues for a particular project."""
+
         queryset = instance.issues.all()
         serializer = IssueListSerializer(queryset, many=True)
         return serializer.data
 
     def get_users(self, instance):
+        """Gets a list of contributors for a particular project."""
+
         queryset = instance.contributors.all()
         serializer = ContributorListSerializer(queryset, many=True)
         return serializer.data
