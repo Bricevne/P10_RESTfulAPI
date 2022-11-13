@@ -70,25 +70,17 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["first_name", "last_name", "email"]
-
-
-class ContributorDetailSerializer(ModelSerializer):
-    """Contributor serializer for a specific detailed contributor."""
-
-    user = UserSerializer()
-
-    class Meta:
-        model = Contributor
-        fields = ["user_id", "project_id", "permission", "role", 'user']
+        fields = ["user_id", "first_name", "last_name", "email"]
 
 
 class ContributorListSerializer(ModelSerializer):
     """Contributor serializer for a list of contributors."""
 
+    user = UserSerializer()
+
     class Meta:
         model = Contributor
-        fields = ["id", "user_id", "permission", "role"]
+        fields = ["id", "permission", "project_id", "role", 'user']
 
 
 class CommentListSerializer(ModelSerializer):
