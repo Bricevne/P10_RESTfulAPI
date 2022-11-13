@@ -125,7 +125,7 @@ class Project(models.Model):
 
     project_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=128)
-    description = models.CharField(max_length=2048, null=True)
+    description = models.CharField(max_length=2048)
     type = models.CharField(max_length=3, choices=Type.choices)
     author_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -159,7 +159,7 @@ class Issue(models.Model):
 
     issue_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=128)
-    description = models.CharField(max_length=2048, null=True)
+    description = models.CharField(max_length=2048)
     tag = models.CharField(max_length=1, choices=Tag.choices)
     priority = models.CharField(max_length=1, choices=Priority.choices)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name="issues")
@@ -188,8 +188,9 @@ class Contributor(models.Model):
     """Class managing contributors. Represents a link between users and projects."""
 
     class Permission(models.TextChoices):
-        CR = 'CR', _('Create and Read')
-        CRUD = 'CRUD', _('Create, Read, Update and Delete')
+        ADMIN = 'A', _('Admin')
+        RESTRICTED = 'R', _('Restricted access')
+        MEMBER = 'M', _('Member')
 
     class Role(models.TextChoices):
         LEADER = 'L', _('Leader')

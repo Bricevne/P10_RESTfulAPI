@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError, CharField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -130,7 +131,10 @@ class IssueListSerializer(ModelSerializer):
 
         request = self.context.get("request")
         project = Project.objects.get(pk=request.parser_context['kwargs']['project_pk'])
-        assignee_user = CustomUser.objects.get(pk=self._kwargs['data']['assignee_user'])
+        try:
+            assignee_user = CustomUser.objects.get(pk=self._kwargs['data']['assignee_user'])
+        except ObjectDoesNotExist:
+            raise ValidationError(f"{self._kwargs['data']['assignee_user']} does not match any user id.")
         if not (contributor(assignee_user, project) or assignee_user == project.author_user):
             raise ValidationError(f"assignee_user {assignee_user.user_id} is no author nor contributor of this project")
         return data
