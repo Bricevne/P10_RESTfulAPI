@@ -41,7 +41,8 @@ python manage.py runserver # Start the local server
 
 ## Use Postman to test the API's endpoints
 
-### Install Postman
+### Postman installation
+
 You can install Postman by following the instructions from the following url:
 
 `https://www.postman.com/downloads/"`
@@ -55,6 +56,10 @@ Moreover, a user has to be a contributor or a project author to have access to e
 issues and comments.
 
 ### Collection test
+
+You can access this API's collections by importing data (File -> Import -> Link) with the following link:
+
+`https://www.getpostman.com/collections/66b05f0768ba551e556f`
 
 You can either test all endpoints at once through the "Run collection" button, or one by one.
 
