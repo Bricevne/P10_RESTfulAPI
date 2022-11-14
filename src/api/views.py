@@ -51,6 +51,7 @@ class ContributorViewset(MultipleSerializerMixin, ModelViewSet):
     """
 
     serializer_class = serializers.ContributorListSerializer
+    detail_serializer_class = serializers.ContributorDetailSerializer
     permission_classes = [IsAuthenticatedProjectAuthorOrContributor]
 
     def get_queryset(self):
