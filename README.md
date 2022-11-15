@@ -32,10 +32,9 @@ Insert your django secret key in the .env file
 
 ## Launch the local server
 
-Enter the "src" folder and run the following code to access the api:
+Enter the "src" folder. As a database already exists, run the following code to access the api:
 
 ```bash
-python manage.py migrate # Create the migrations
 python manage.py runserver # Start the local server
 ```
 
